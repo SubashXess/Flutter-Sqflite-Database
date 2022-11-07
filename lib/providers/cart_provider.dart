@@ -17,15 +17,19 @@ class CartProvider with ChangeNotifier {
   late Future<List<CartModel>> _cartItem;
   Future<List<CartModel>> get cartItem => _cartItem;
 
-  late Future<List<CartModel>> _cartItemID;
-  Future<List<CartModel>> get cartItemID => _cartItemID;
+  Future<CartModel>? _cartItemID;
+  Future<CartModel>? get cartItemID => _cartItemID;
 
   Future<List<CartModel>> getData() async {
     _cartItem = dbHelper!.getCartItems();
-    // notifyListeners();
     return _cartItem;
   }
 
+  Future<CartModel?> getDataById(String productId) async {
+    _cartItemID =
+        (await dbHelper!.getItemWithId(productId)) as Future<CartModel>?;
+    return _cartItemID;
+  }
 
   void _setPreferences() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();

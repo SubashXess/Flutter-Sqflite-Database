@@ -40,6 +40,18 @@ class DBHelper {
     return queryResult.map((result) => CartModel.fromJson(result)).toList();
   }
 
+  // getting individual item with productId
+  Future<CartModel?> getItemWithId(String productId) async {
+    Database? dbClient = await database;
+    final List<Map<String, Object?>> response = await dbClient!
+        .query('cart', where: 'productId = ?', whereArgs: [productId]);
+    if (response.isNotEmpty) {
+      return CartModel.fromJson(response.first);
+    } else {
+      return null;
+    }
+  }
+
   Future<int> deleteItemFromCart(int productId) async {
     Database? dbClient = await database;
     return await dbClient!

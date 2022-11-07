@@ -242,11 +242,12 @@ class _CartPageState extends State<CartPage> {
                                                           .then((_) {
                                                         newPrice = 0.0;
                                                         quantity = 0;
-                                                        value.removeCounter();
+
                                                         value.removeTotalPrice(
                                                             snapshot
                                                                 .data![index]
                                                                 .initialPrice!);
+                                                        value.removeCounter();
                                                         setState(() {});
                                                       }).onError((error,
                                                               stackTrace) {

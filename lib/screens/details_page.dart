@@ -4,6 +4,7 @@ import 'package:addtocart_with_provider/database/db_helper.dart';
 import 'package:addtocart_with_provider/models/cart_model.dart';
 import 'package:addtocart_with_provider/models/product_model.dart';
 import 'package:addtocart_with_provider/providers/cart_provider.dart';
+import 'package:addtocart_with_provider/screens/cart_page.dart';
 import 'package:addtocart_with_provider/services/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -36,11 +37,28 @@ class _DetailsPageState extends State<DetailsPage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       Provider.of<CartProvider>(context, listen: false);
     });
+    getIdByDB();
   }
 
   // bool checkItemAddedToCart(id) {
   //   return cartItems.indexWhere((element) => element.productId == id) > -1;
   // }
+
+  void getIdByDB() async {
+    final productId = await dbHelper!.getItemWithId(widget.id);
+    // print('DB Product ID: ${productId!.productId}');
+    if (productId != null) {
+      print('DB Product ID: ${productId.productId}');
+      setState(() {
+        isAddingToCart = true;
+      });
+    } else {
+      print('Id is null');
+      setState(() {
+        isAddingToCart = false;
+      });
+    }
+  }
 
   final String uid = 'USER100';
   final String vendorId = 'VEN101';
@@ -179,43 +197,53 @@ class _DetailsPageState extends State<DetailsPage> {
                                     builder: (context, value, child) {
                                   return MaterialButton(
                                     onPressed: () {
-                                      dbHelper!
-                                          .insertToDB(
-                                        CartModel(
-                                          uid: uid,
-                                          id: widget.index,
-                                          productId:
-                                              snap.data![0].pId.toString(),
-                                          vendorId: vendorId,
-                                          title: snap.data![0].spName,
-                                          subtitle: snap.data![0].subTitle,
-                                          photo: snap.data![0].spImg.toString(),
-                                          selectedQuantity: 1,
-                                          unitTag: snap.data![0].size,
-                                          initialPrice: double.parse(snap
-                                              .data![0].discountPrice
-                                              .toString()),
-                                          productPrice: double.parse(snap
-                                              .data![0].discountPrice
-                                              .toString()),
-                                        ),
-                                      )
-                                          .then((_) {
-                                        print('Product is added to cart');
-                                        value.addTotalPrice(double.parse(snap
-                                            .data![0].discountPrice
-                                            .toString()));
-                                        value.addCounter();
-                                        setState(() {
-                                          isAddingToCart =
-                                              !isAddingToCart; // true
-                                        });
-                                      }).onError((error, stackTrace) {
-                                        print('Error $error');
-                                        setState(() {
-                                          isAddingToCart = false;
-                                        });
-                                      });
+                                      !isAddingToCart
+                                          ? dbHelper!
+                                              .insertToDB(
+                                              CartModel(
+                                                uid: uid,
+                                                id: widget.index,
+                                                productId: snap.data![0].pId
+                                                    .toString(),
+                                                vendorId: vendorId,
+                                                title: snap.data![0].spName,
+                                                subtitle:
+                                                    snap.data![0].subTitle,
+                                                photo: snap.data![0].spImg
+                                                    .toString(),
+                                                selectedQuantity: 1,
+                                                unitTag: snap.data![0].size,
+                                                initialPrice: double.parse(snap
+                                                    .data![0].discountPrice
+                                                    .toString()), // 21.00
+                                                productPrice: double.parse(snap
+                                                    .data![0].discountPrice
+                                                    .toString()), // 21.00
+                                              ),
+                                            )
+                                              .then((_) {
+                                              print('Product is added to cart');
+                                              value.addTotalPrice(double.parse(
+                                                  snap.data![0].discountPrice
+                                                      .toString()));
+                                              value.addCounter();
+                                              setState(() {
+                                                isAddingToCart = true;
+                                                // true
+                                              });
+                                            }).onError((error, stackTrace) {
+                                              print('Error $error');
+                                              setState(() {
+                                                isAddingToCart = false;
+                                              });
+                                            })
+                                          : Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const CartPage(),
+                                              ),
+                                            );
                                     },
                                     color: isAddingToCart
                                         ? Colors.deepPurple.shade50
